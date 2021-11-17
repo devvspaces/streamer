@@ -1,0 +1,29 @@
+{% extends 'poc/base.html' %}
+{% block contents %}
+<section>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-4">
+
+                {% for i in streams %}
+                <div class="card my-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Audio {{ i.id }}</h5>
+                        <a href="#" class="d-block mb-3">{{ i.link }}</a>
+                        <a href="{% url 'poc:stream_detail' i.id %}" class="btn btn-primary">View Results</a>
+                        <a href="{{ i.link }}" class="btn btn-outline-primary" target="_blank">View Stream</a>
+                    </div>
+                </div>
+
+                {% endfor %}
+
+                {% if streams.count <= 0 %}
+                    <h4 class='my-3'>There are no new streams!</h4>
+                {% endif %}
+
+                <a href="{% url 'poc:stream_create' %}" class="btn btn-lg d-block w-100 py-2 btn-success mt-3">Add New Stream</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock contents %}

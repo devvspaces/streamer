@@ -1,72 +1,59 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio Streamer</title>
 
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.2/dist/css/bootstrap.css">
-</head>
-<body>
+{% extends 'poc/base.html' %}
+{% block contents %}
+<section>
+    <div class="container">
+        <div class="row">
+            <div class="col-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Stream {{ stream.id }}</h5>
+                        
+                        <a href="{{ stream.link }}" class="d-block mb-3">{{ stream.link }}</a>
 
-    <section>
-        <div class="container">
-            <h1>Audio Streamer</h1>
-        </div>
-    </section>
-
-    <section>
-        <div class="container">
-            <div class="row">
-                <div class="col-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Audio 1</h5>
-                            <p class="card-text">https://github.com/streamer</p>
-                            <a href="#" class="btn btn-primary">View Stream</a>
-                        </div>
-                    </div>
-
-                    <div class="add-audio">
-                        Add
+                        <a href="{{ stream.link }}" class="btn btn-primary">View Stream</a>
                     </div>
                 </div>
-                <div class="col-8">
-                    <table class="table">
-                        <thead>
-                          <tr>
+                
+            </div>
+            <div class="col-12 mt-5">
+                <h4>Stream Results</h4>
+                <table class="table">
+                    <thead>
+                        <tr>
                             <th scope="col">#</th>
-                            <th scope="col">First</th>
-                            <th scope="col">Last</th>
-                            <th scope="col">Handle</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <th scope="row">1</th>
-                            <td>Mark</td>
-                            <td>Otto</td>
-                            <td>@mdo</td>
-                          </tr>
-                          <tr>
-                            <th scope="row">2</th>
-                            <td>Jacob</td>
-                            <td>Thornton</td>
-                            <td>@fat</td>
-                          </tr>
-                          <tr>
-                            <th scope="row">3</th>
-                            <td colspan="2">Larry the Bird</td>
-                            <td>@twitter</td>
-                          </tr>
-                        </tbody>
-                    </table>
-                </div>
+                            <th scope="col">Key</th>
+                            <th scope="col">Layout</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Subtitle</th>
+                            <th scope="col">Url</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stream_results">
+                        {% for i in streams %}
+                        <tr>
+                            <th scope="row">{{ forloop.counter }}</th>
+                            <td>{{ i.key }}</td>
+                            <td>{{ i.layout }}</td>
+                            <td>{{ i.type }}</td>
+                            <td>{{ i.title }}</td>
+                            <td>{{ i.subtitle }}</td>
+                            <td>{{ i.url }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+
+                {% if streams.count <= 0 %}
+                    <h3 class='empty_results'>There are no results yet!</h3>
+                {% endif %}
             </div>
         </div>
-    </section>
-    
-</body>
-</html>
+    </div>
+</section>
+
+{{ room_name|json_script:"room-name" }}
+
+{% endblock contents %}

@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -16,7 +17,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    'channels',
     'poc',
 ]
 
@@ -49,7 +50,15 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'streamer.wsgi.application'
+ASGI_APPLICATION = 'streamer.asgi.application'
 
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
@@ -95,12 +104,48 @@ USE_L10N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.2/howto/static-files/
-
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "assets"),
+]
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
+# STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'loggers': {
+        'basic': {
+            'handlers': ['basic_h'],
+            'level': 'DEBUG',
+        },
+        'basic.error': {
+            'handlers': ['basic_e'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+    },
+    'handlers': {
+        'basic_h': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': './logs/debug.log',
+            'formatter' : 'simple',
+        },
+        'basic_e': {
+            'level': 'WARNING',
+            'class': 'logging.FileHandler',
+            'filename': './logs/error.log',
+            'formatter' : 'simple',
+        },
+    },
+    'formatters':{
+        'simple': {
+            'format': '{levelname} : {asctime} : {message}',
+            'style': '{',
+        }
+    }
+}

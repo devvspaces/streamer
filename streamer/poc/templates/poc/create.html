@@ -1,0 +1,28 @@
+
+{% extends 'poc/base.html' %}
+{% block contents %}
+<section>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-5">
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <h4 class="mb-3">Create New Audio Stream</h4>
+                    <div class="mb-3">
+                        <label for="link_id" class="form-label">Stream Url</label>
+                        <input type="url" class="form-control" name="link" id="link_id" aria-describedby="link_idHelp">
+                        <div class="form-text">
+                            {% for i in form.link.errors %}
+                                <p class="text-danger">{{ i }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <button type="submit" class="btn d-block w-100 btn-primary mt-3">Submit</button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock contents %}
