@@ -36,7 +36,7 @@ pipwin==0.5.1
 proglog==0.1.9
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
-PyAudio @ file:///C:/Users/Dell/pipwin/PyAudio-0.2.11-cp310-cp310-win_amd64.whl
+# PyAudio @ file:///C:/Users/Dell/pipwin/PyAudio-0.2.11-cp310-cp310-win_amd64.whl
 pycparser==2.21
 pydub==0.25.1
 pyjsparser==2.7.1
