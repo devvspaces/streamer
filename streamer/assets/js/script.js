@@ -10,16 +10,11 @@ String.prototype.format = function () {
 let chatSocket = ''
 try {
     const roomName = JSON.parse(document.getElementById('room-name').textContent);
-
-    var loc = window.location;
-    var wsStart = 'ws://';
-    if (loc.protocol == 'https:') {
-        wsStart = 'wss://'
-    }
+    var ws_scheme = window.location.protocol == 'https:' ? 'wss' : 'ws';
+    var ws_path = ws_scheme + '://' + window.location.host + ":8001"; // PRODUCTION
 
     chatSocket = new WebSocket(
-        wsStart
-        + window.location.host
+        ws_path
         + '/ws/webchat/'
         + roomName
         + '/'
