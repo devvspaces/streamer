@@ -21,37 +21,38 @@ from asgiref.sync import async_to_sync
 
 
 class M3U8:
-	def __init__(self, link):
-		self.link = link
-		self.playlist = m3u8.load(self.link)
-		self.base_url = self.get_base_url()
+    def __init__(self, link):
+        self.link = link
+        self.playlist = m3u8.load(self.link)
+        self.base_url = self.get_base_url()
 
-	def get_base_url(self):
-		parts = self.link.split('/')
-		parts.pop()
-		return '/'.join(parts) + '/'
+    def get_base_url(self):
+        parts = self.link.split('/')
+        parts.pop()
+        return '/'.join(parts) + '/'
 
-	def get_full_link(self, link):
-		return self.base_url + link
+    def get_full_link(self, link):
+        return self.base_url + link
 
-	def get_ts_uris(self):
-		ts = []
+    def get_ts_uris(self) -> tuple:
+        ts = []
+        target_duration = self.playlist.target_duration
 
-		if self.playlist.target_duration is not None:
-			for i in self.playlist.segments:
-				ts.append(self.base_url + i.uri)
+        if target_duration is not None:
+            for i in self.playlist.segments:
+                ts.append(self.base_url + i.uri)
 
-		else:
-			media = self.playlist.media
+        else:
+            media = self.playlist.media
 
-			for i in media:
-				if i.uri is not None:
-					# Create new m3u8 obj
-					media_link = self.get_full_link(i.uri)
-					media_obj = self.__class__(media_link)
-					ts = media_obj.get_ts_uris()
+            for i in media:
+                if i.uri is not None:
+                    # Create new m3u8 obj
+                    media_link = self.get_full_link(i.uri)
+                    media_obj = self.__class__(media_link)
+                    ts, target_duration = media_obj.get_ts_uris()
 
-		return ts
+        return ts, target_duration
 
 
 
@@ -66,7 +67,7 @@ class MediaLink:
             self.is_mp3 = True
         
 
-    def get_ts_links(self) -> list:
+    def get_ts_links(self) -> tuple:
         obj = M3U8(link=self.stream.link)
         return obj.get_ts_uris()
 
@@ -181,13 +182,21 @@ class MediaLink:
     def process(self):
 
         ts_links = []
+        sep = 1
 
         # What type of link are we dealing with
         if self.is_mp3:
             ts_links = [self.stream.link]
+            logger.debug(f"Ts links -- {len(ts_links)} and Separator -- {sep}")
         else:
-            ts_links = self.get_ts_links()
-
+            ts_links, target_duration = self.get_ts_links()
+            if target_duration:
+                val = float(target_duration)
+                if val < 10:
+                    sep = 10 / val
+            
+            logger.debug(f"Ts links -- {len(ts_links)} and Separator -- {sep} and target_duration -- {target_duration}")
+        
         # Generate a new file name
         name_prefix = datetime.datetime.now().strftime("%Y-%m-%d %H-%M-%S")
 
@@ -196,18 +205,30 @@ class MediaLink:
         else:
             filename = name_prefix+'.mpeg'
 
-        for url in ts_links[:20]:
-            r1 = requests.get(url, stream=True)
-            if(r1.status_code == 200 or r1.status_code == 206):
+        for i in range(len(ts_links))[::sep]:
+            new_set = ts_links[i:i+sep]
 
-                # re-open output file to append new video
-                with open(filename,'ab') as f:
-                    data = b''
-                    for chunk in r1.iter_content(chunk_size=1024):
-                        if(chunk):
-                            data += chunk
-                    f.write(data)
+            completed = False
 
+            for url in new_set:
+                r1 = requests.get(url, stream=True)
+                if(r1.status_code == 200 or r1.status_code == 206):
+                    # re-open output file to append new video
+                    with open(filename,'ab') as f:
+                        data = b''
+                        for chunk in r1.iter_content(chunk_size=1024):
+                            if(chunk):
+                                data += chunk
+                        f.write(data)
+
+                        logger.debug(f"Wrote to file {filename}")
+
+                        # set completed to true
+                        completed = True
+                else:
+                    logger.debug("Received unexpected status code {}".format(r1.status_code))
+            
+            if completed:
                 if not self.is_mp3:
                     # Read file and convert to audio
                     mp3_file = self.generate_mp3(name_prefix)
@@ -223,24 +244,8 @@ class MediaLink:
                     self.send_channel_message(self.stream.id, message=result, mtype='stream_result')
                     self.stream.result_set.create(**result)
 
-                # Convert mp3 to wav
-                # wav_file = self.generate_wav(mp3_file)
-
                 # Delete mp3 file
                 self.delete_file(mp3_file)
 
-                # # Get the text from wav
-                # speech = self.recognize_speech(wav_file)
-
-                # logger.debug(speech)
-
-                # # if speech:
-                # #     self.get_song_details(speech)
-
-                # # Delete wav file
-                # # self.delete_file(wav_file)
-
                 # # Delete file
                 self.delete_file(filename)
-            else:
-                logger.debug("Received unexpected status code {}".format(r1.status_code))
