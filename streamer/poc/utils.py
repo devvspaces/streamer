@@ -40,7 +40,11 @@ class M3U8:
 
         if target_duration is not None:
             for i in self.playlist.segments:
-                ts.append(self.base_url + i.uri)
+
+                if self.base_url in i.uri:
+                    ts.append(i.uri)
+                else:
+                    ts.append(self.base_url + i.uri)
 
         else:
             media = self.playlist.media
@@ -193,7 +197,7 @@ class MediaLink:
             if target_duration:
                 val = float(target_duration)
                 if val < 10:
-                    sep = 10 / val
+                    sep = int(10 / val)
             
             logger.debug(f"Ts links -- {len(ts_links)} and Separator -- {sep} and target_duration -- {target_duration}")
         
@@ -243,9 +247,16 @@ class MediaLink:
                 if result:
                     self.send_channel_message(self.stream.id, message=result, mtype='stream_result')
                     self.stream.result_set.create(**result)
+                
+                # break
 
                 # Delete mp3 file
                 self.delete_file(mp3_file)
 
-                # # Delete file
-                self.delete_file(filename)
+                try:
+                    # Delete file
+                    self.delete_file(filename)
+                except PermissionError as e:
+                    err_logger.exception(e)
+                    logger.debug(f'Wrote {filename} as empty')
+                    self.write_empty(filename)
