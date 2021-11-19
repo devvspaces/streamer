@@ -11,7 +11,7 @@ let chatSocket = ''
 try {
     const roomName = JSON.parse(document.getElementById('room-name').textContent);
     var ws_scheme = window.location.protocol == 'https:' ? 'wss' : 'ws';
-    var ws_path = ws_scheme + '://' + window.location.host; // PRODUCTION
+    var ws_path = ws_scheme + '://' + window.location.host + ":8001"; // PRODUCTION
 
     chatSocket = new WebSocket(
         ws_path
