@@ -176,7 +176,7 @@ class MediaLink:
 
         headers = {
             'x-rapidapi-host': "shazam.p.rapidapi.com",
-            'x-rapidapi-key': "ab45e898d7msh2fb0506a5c7035ap1b6989jsnd9ef42c71396"
+            'x-rapidapi-key': ""
             }
 
         response = requests.request("GET", url, headers=headers, params=querystring)
